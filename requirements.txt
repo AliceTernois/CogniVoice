@@ -1,0 +1,9 @@
+torch
+torchaudio
+transformers>=4.25
+transformers[torch] 
+wandb
+datasets==2.11.0
+numpy
+pandas
+scikit-learn

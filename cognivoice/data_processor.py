@@ -29,9 +29,9 @@ class TAUKADIALDataset(Dataset):
         super().__init__()
 
         self.args = args
-        self.data = pd.read_csv('/data/datasets/TAUKADIAL-24/train/groundtruth.csv')
+        self.data = pd.read_csv('data/datasets/TAUKADIAL-24/train/groundtruth.csv')
 
-        disvoice = pd.read_parquet('/data/datasets/TAUKADIAL-24/feature/feats_train.parquet')
+        disvoice = pd.read_parquet('data/datasets/TAUKADIAL-24/feature/feats_train.parquet')
         for i in disvoice.columns:
             if i != 'filename':
                 disvoice[i+'_mean'] = disvoice[i].apply(np.mean).fillna(0)
@@ -41,7 +41,7 @@ class TAUKADIALDataset(Dataset):
         if subset is not None:
             self.data = self.data.iloc[subset]
 
-        self.data['audio'] = [load_wave(f'/data/datasets/TAUKADIAL-24/train/{i}', sample_rate=self.args.sample_rate).flatten() for i in self.data.tkdname]
+        self.data['audio'] = [load_wave(f'data/datasets/TAUKADIAL-24/train/{i}', sample_rate=self.args.sample_rate).flatten() for i in self.data.tkdname]
         self.feature_extractor = AutoFeatureExtractor.from_pretrained(self.args.method)
 
         if 'whisper' in self.args.method:
@@ -66,7 +66,7 @@ class TAUKADIALDataset(Dataset):
         self.cn_tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
 
         # Transcribed text
-        text = pd.read_parquet('/data/datasets/TAUKADIAL-24/transcription/translation_train.parquet')
+        text = pd.read_parquet('data/datasets/TAUKADIAL-24/transcription/translation_train.parquet')
         self.data = pd.merge(self.data, text, left_on='tkdname', right_on='file_name')
 
         text_feat = [
@@ -79,7 +79,7 @@ class TAUKADIALDataset(Dataset):
 
         # LLAMA-2 explainations
         self.data['pid'] = self.data.tkdname.apply(lambda x: x.split('-')[1])
-        self.data['llama2'] = self.data.pid.apply(lambda x: open(f'/data/datasets/TAUKADIAL-24/llama2/llama2_train/{x}.txt').read())
+        self.data['llama2'] = self.data.pid.apply(lambda x: open(f'data/datasets/TAUKADIAL-24/llama2/llama2_train/{x}.txt').read())
 
         llama2_feat = self.en_tokenizer(self.data['llama2'].tolist(), padding='max_length', max_length=256, truncation=True)
         self.data['llama2_input_ids'] = llama2_feat['input_ids']
@@ -116,17 +116,17 @@ class TAUKADIALTestDataset(Dataset):
         super().__init__()
 
         self.args = args
-        files = os.listdir('/data/datasets/TAUKADIAL-24/test/TAUKADIAL-24/test')
+        files = os.listdir('data/datasets/TAUKADIAL-24/test/TAUKADIAL-24/test')
         files = [i for i in files if i.endswith('.wav')]
 
-        self.data = pd.read_parquet(f'/data/datasets/TAUKADIAL-24/feature/feats_test.parquet')
+        self.data = pd.read_parquet(f'data/datasets/TAUKADIAL-24/feature/feats_test.parquet')
         for i in self.data.columns:
             if i != 'filename':
                 self.data[i+'_mean'] = self.data[i].apply(np.mean).fillna(0)
 
         self.data['audio'] = [
             load_wave(
-                f'/data/datasets/TAUKADIAL-24/test/TAUKADIAL-24/test/{i}', 
+                f'data/datasets/TAUKADIAL-24/test/TAUKADIAL-24/test/{i}', 
                 sample_rate=self.args.sample_rate).flatten() 
             for i in self.data.filename]
         self.feature_extractor = AutoFeatureExtractor.from_pretrained(self.args.method)
@@ -153,7 +153,7 @@ class TAUKADIALTestDataset(Dataset):
         self.cn_tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
 
         # Transcribed text
-        text = pd.read_parquet('/data/datasets/TAUKADIAL-24/transcription/translation_test.parquet')
+        text = pd.read_parquet('data/datasets/TAUKADIAL-24/transcription/translation_test.parquet')
         self.data = pd.merge(self.data, text, left_on='filename', right_on='file_name')
 
         text_feat = [
@@ -166,7 +166,7 @@ class TAUKADIALTestDataset(Dataset):
 
         # LLAMA-2 explainations
         self.data['pid'] = self.data.filename.apply(lambda x: x.split('-')[1])
-        self.data['llama2'] = self.data.pid.apply(lambda x: open(f'/data/datasets/TAUKADIAL-24/llama2/llama2_test/{x}.txt').read())
+        self.data['llama2'] = self.data.pid.apply(lambda x: open(f'data/datasets/TAUKADIAL-24/llama2/llama2_test/{x}.txt').read())
 
         llama2_feat = self.en_tokenizer(self.data['llama2'].tolist(), padding='max_length', max_length=256, truncation=True)
         self.data['llama2_input_ids'] = llama2_feat['input_ids']

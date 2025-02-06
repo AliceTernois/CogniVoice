@@ -1,0 +1,32 @@
+import tarfile
+import os
+import shutil
+
+def extract_tgz(tgz_path, extract_path):
+    with tarfile.open(tgz_path, "r:gz") as tar:
+        # Extract to a temporary directory
+        temp_dir = extract_path + "_temp"
+        tar.extractall(path=temp_dir)
+        
+        # Move contents from the nested TAUKADIAL-24 folder to the desired location
+        nested_dir = os.path.join(temp_dir, "TAUKADIAL-24")
+        for item in os.listdir(nested_dir):
+            s = os.path.join(nested_dir, item)
+            d = os.path.join(extract_path, item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, dirs_exist_ok=True)
+            else:
+                shutil.copy2(s, d)
+        
+        # Remove the temporary directory
+        shutil.rmtree(temp_dir)
+
+# Extract train data
+train_tgz = "data/datasets/TAUKADIAL-24-train.tgz"
+train_extract_path = "data/datasets/TAUKADIAL-24"
+extract_tgz(train_tgz, train_extract_path)
+
+# Extract test data
+test_tgz = "data/datasets/TAUKADIAL-24-test.tgz"
+test_extract_path = "data/datasets/TAUKADIAL-24"
+extract_tgz(test_tgz, test_extract_path)
