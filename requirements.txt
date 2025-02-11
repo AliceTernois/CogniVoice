@@ -7,3 +7,5 @@ datasets==2.11.0
 numpy
 pandas
 scikit-learn
+disvoice
+scipy==1.11.1

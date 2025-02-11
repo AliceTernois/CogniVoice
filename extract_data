@@ -1,8 +1,19 @@
 import tarfile
 import os
 import shutil
+import pandas as pd
+import disvoice  # Assuming you have disvoice
+import whisper
+from transformers import BertTokenizer
+import librosa
+import numpy as np
 
 def extract_tgz(tgz_path, extract_path):
+    # Check if the directory already exists
+    if os.path.exists(os.path.join(extract_path, 'train')) and os.path.exists(os.path.join(extract_path, 'test')):
+        print(f"Directories {os.path.join(extract_path, 'train')} and {os.path.join(extract_path, 'test')} already exist. Skipping extraction.")
+        return
+    
     with tarfile.open(tgz_path, "r:gz") as tar:
         # Extract to a temporary directory
         temp_dir = extract_path + "_temp"
@@ -30,3 +41,88 @@ extract_tgz(train_tgz, train_extract_path)
 test_tgz = "data/datasets/TAUKADIAL-24-test.tgz"
 test_extract_path = "data/datasets/TAUKADIAL-24"
 extract_tgz(test_tgz, test_extract_path)
+
+
+
+
+# Create features files
+def extract_disvoice_features(audio_file):
+    # Use disvoice to extract features from the audio_file
+    try:
+        features = disvoice.extract_features(audio_file)
+        return features
+    except Exception as e:
+        print(f"Error extracting DisVoice features from {audio_file}: {e}")
+        return None
+
+def create_feature_file(audio_dir, output_parquet):
+    """
+    Extracts DisVoice features from audio files in a directory
+    and saves them to a parquet file.
+    """
+    os.makedirs(os.path.dirname(output_parquet), exist_ok=True) # Ensure directory exists
+
+    data = []
+    for filename in os.listdir(audio_dir):
+        if filename.endswith(".wav"):  # Or your audio format
+            audio_file = os.path.join(audio_dir, filename)
+            features = extract_disvoice_features(audio_file)
+            if features:
+                data.append({'filename': filename, **features}) # filename is important because it's used to merge
+
+    df = pd.DataFrame(data)
+    df.to_parquet(output_parquet)
+    print(f"DisVoice features saved to {output_parquet}")
+
+
+# Create transription files
+def create_transcription_file(audio_dir, output_parquet, whisper_model_name="base"):
+    """
+    Transcribes audio files in a directory using Whisper and saves the transcriptions to a parquet file.
+    """
+    os.makedirs(os.path.dirname(output_parquet), exist_ok=True) # Ensure directory exists
+
+    model = whisper.load_model(whisper_model_name) # Load whisper model
+
+    data = []
+    for filename in os.listdir(audio_dir):
+        if filename.endswith(".wav"):
+            audio_path = os.path.join(audio_dir, filename)
+            try:
+                # Load audio using librosa to handle various sample rates
+                audio, sr = librosa.load(audio_path, sr=None)
+
+                # If the audio is stereo, convert it to mono
+                if len(audio.shape) > 1:
+                    audio = librosa.to_mono(audio)
+
+                # Transcribe audio with Whisper
+                result = model.transcribe(audio)
+                transcription = result["text"]
+
+                data.append({'file_name': filename, 'transcribed_text': transcription})
+            except Exception as e:
+                print(f"Error transcribing {filename}: {e}")
+                data.append({'file_name': filename, 'transcribed_text': ""}) # Add empty transcription to avoid errors
+
+    df = pd.DataFrame(data)
+    df.to_parquet(output_parquet)
+    print(f"Transcriptions saved to {output_parquet}")
+
+
+# Example usage (adjust paths accordingly)
+audio_directory_train = "data/datasets/TAUKADIAL-24/train/"  # Directory with your training audio files
+audio_directory_test = "data/datasets/TAUKADIAL-24/test/"  # Directory with your testing audio files
+
+output_file_train = "data/datasets/TAUKADIAL-24/feature/feats_train.parquet"
+output_file_test = "data/datasets/TAUKADIAL-24/feature/feats_test.parquet"
+
+create_feature_file(audio_directory_train, output_file_train)
+create_feature_file(audio_directory_test, output_file_test)
+
+# Create transcriptions
+transcription_output_train = "data/datasets/TAUKADIAL-24/transcription/translation_train.parquet"
+transcription_output_test = "data/datasets/TAUKADIAL-24/transcription/translation_test.parquet"
+
+create_transcription_file(audio_directory_train, transcription_output_train)
+create_transcription_file(audio_directory_test, transcription_output_test)
