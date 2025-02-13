@@ -77,6 +77,7 @@ class TAUKADIALDataset(Dataset):
         self.data['text_input_ids'] = [i['input_ids'] for i in text_feat]
         self.data['text_attention_mask'] = [i['attention_mask'] for i in text_feat]
 
+        '''
         # LLAMA-2 explainations
         self.data['pid'] = self.data.tkdname.apply(lambda x: x.split('-')[1])
         self.data['llama2'] = self.data.pid.apply(lambda x: open(f'data/datasets/TAUKADIAL-24/llama2/llama2_train/{x}.txt').read())
@@ -84,6 +85,7 @@ class TAUKADIALDataset(Dataset):
         llama2_feat = self.en_tokenizer(self.data['llama2'].tolist(), padding='max_length', max_length=256, truncation=True)
         self.data['llama2_input_ids'] = llama2_feat['input_ids']
         self.data['llama2_attention_mask'] = llama2_feat['attention_mask']
+        '''
 
     def __len__(self):
         return len(self.data)
@@ -107,8 +109,8 @@ class TAUKADIALDataset(Dataset):
             'disvoice_features': disvoice_features,
             'text_input_ids': data['text_input_ids'],
             'text_attention_mask': data['text_attention_mask'],
-            'llama2_input_ids': data['llama2_input_ids'],
-            'llama2_attention_mask': data['llama2_attention_mask'],
+            #'llama2_input_ids': data['llama2_input_ids'],
+            #'llama2_attention_mask': data['llama2_attention_mask'],
         }
         
 class TAUKADIALTestDataset(Dataset):
@@ -163,7 +165,7 @@ class TAUKADIALTestDataset(Dataset):
         ]
         self.data['text_input_ids'] = [i['input_ids'] for i in text_feat]
         self.data['text_attention_mask'] = [i['attention_mask'] for i in text_feat]
-
+        '''
         # LLAMA-2 explainations
         self.data['pid'] = self.data.filename.apply(lambda x: x.split('-')[1])
         self.data['llama2'] = self.data.pid.apply(lambda x: open(f'data/datasets/TAUKADIAL-24/llama2/llama2_test/{x}.txt').read())
@@ -171,7 +173,7 @@ class TAUKADIALTestDataset(Dataset):
         llama2_feat = self.en_tokenizer(self.data['llama2'].tolist(), padding='max_length', max_length=256, truncation=True)
         self.data['llama2_input_ids'] = llama2_feat['input_ids']
         self.data['llama2_attention_mask'] = llama2_feat['attention_mask']
-
+        '''
     def __len__(self):
         return len(self.data)
     
@@ -192,8 +194,8 @@ class TAUKADIALTestDataset(Dataset):
             'disvoice_features': disvoice_features,
             'text_input_ids': data['text_input_ids'],
             'text_attention_mask': data['text_attention_mask'],
-            'llama2_input_ids': data['llama2_input_ids'],
-            'llama2_attention_mask': data['llama2_attention_mask'],
+            #'llama2_input_ids': data['llama2_input_ids'],
+            #'llama2_attention_mask': data['llama2_attention_mask'],
         }
 
 
