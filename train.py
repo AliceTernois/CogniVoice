@@ -23,6 +23,7 @@ from transformers import (
 
 from cognivoice.model import Whisper, WhisperPoe
 from cognivoice.data_processor import *
+from cognivoice.metrics import *
 from cognivoice.training_args import AudioTrainingArguments, RemainArgHfArgumentParser
 
 
@@ -98,6 +99,8 @@ def main():
         # Dataset
         train_data = TAUKADIALDataset(args, subset=train_idx)
         eval_data = TAUKADIALDataset(args, subset=eval_idx)
+        print(f"Training data size: {len(train_data)}")
+        print(f"Validation data size: {len(eval_data)}")
 
         # Model
         if args.method == 'wav2vec':
@@ -142,8 +145,8 @@ def main():
             for lng in set(lng_labels):
                 sub_labels = labels[lng_labels == lng]
                 sub_predictions = predictions[lng_labels == lng]
-                sub_labels_mmse = label_mmse[sex_labels == sex]
-                sub_predictions_mmse = mmse_pred[sex_labels == sex]
+                sub_labels_mmse = label_mmse[lng_labels == lng]
+                sub_predictions_mmse = mmse_pred[lng_labels == lng]
                 metrics['uar_%s'%lng_map_rev[lng]] = recall_score(sub_labels, sub_predictions, average='macro')
                 metrics['f1_%s'%lng_map_rev[lng]] = f1_score(sub_labels, sub_predictions, average='binary')
                 metrics['mse_%s'%lng_map_rev[lng]] = mean_squared_error(sub_labels_mmse, sub_predictions_mmse)

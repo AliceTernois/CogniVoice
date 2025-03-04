@@ -15,7 +15,7 @@
 """ GLUE benchmark metric. """
 
 from scipy.stats import pearsonr, spearmanr
-from sklearn.metrics import f1_score, matthews_corrcoef, fbeta_score, mean_squared_error
+from sklearn.metrics import recall_score, f1_score, matthews_corrcoef, fbeta_score, mean_squared_error, r2_score
 
 import datasets
 
@@ -117,4 +117,8 @@ class Glue(datasets.Metric):
                 "You should supply a configuration name selected in "
                 '["cls", "reg"]'
             )
-
+        
+# Ensure these mappings are defined somewhere in your code
+# Example placeholders — adjust as needed
+sex_map_rev = {0: 'male', 1: 'female'}
+lng_map_rev = {0: 'english', 1: 'chinese'} 

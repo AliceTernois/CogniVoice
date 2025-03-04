@@ -189,7 +189,7 @@ class TAUKADIALTestDataset(Dataset):
             'input_features': data['input_features'],
             # 'metadata': [age, sex],
             # 'mmse': mmse,
-            'label': label,
+            'label': -1,
             'lang': lang,
             'disvoice_features': disvoice_features,
             'text_input_ids': data['text_input_ids'],

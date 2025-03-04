@@ -3,6 +3,10 @@ import os
 import shutil
 
 def extract_tgz(tgz_path, extract_path):
+    if os.path.exists(os.path.join(extract_path, "test")) and os.path.exists(os.path.join(extract_path, "train")):
+        print(f"{extract_path} test and train subdirectories already exist. Skipping extraction.")
+        return  # Exit the function if the directory already exists
+    
     with tarfile.open(tgz_path, "r:gz") as tar:
         # Extract to a temporary directory
         temp_dir = extract_path + "_temp"
